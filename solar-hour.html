@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e3b3f">
+<title>Solar Hour</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{--bg:#edf2ee;--ink:#14282b;--mute:#566a6c;--deep:#0e3b3f;--sun:#f2b705;--card:#fff;--line:#d4dfd8;--ok:#2e7d5b;--mid:#a67c00;--weak:#b3402a;--r:14px}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}html{scroll-padding-bottom:140px}button,select,input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{margin:0;line-height:1.2}h2{font-size:1.45rem;font-weight:800;letter-spacing:-.01em}h3{font-size:1.05rem}
+.ur{font-family:"Noto Nastaliq Urdu","Jameel Noori Nastaleeq","Noto Naskh Arabic",serif;font-weight:400}
+header{background:var(--deep);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+header b{font-size:1.2rem;letter-spacing:-.01em}header b i{font-style:normal;color:var(--sun)}
+main{max-width:620px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:0 0 14px}
+.hero{background:var(--deep);color:#fff;border:0}.hero .sub{color:#b9d3d0}
+.sub{color:var(--mute);font-size:.92rem}.big{font-size:1.7rem;font-weight:800;line-height:1.15;margin:4px 0}
+.btn{min-height:48px;padding:10px 18px;border-radius:12px;border:2px solid var(--deep);background:var(--deep);color:#fff;font:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.alt{background:transparent;color:var(--deep)}.btn.sun{background:var(--sun);border-color:var(--sun);color:#1b1500}.btn.bad{background:var(--weak);border-color:var(--weak)}
+.btn.sm{min-height:44px;padding:6px 14px}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>.grow{flex:1}
+.btn:focus-visible,input:focus-visible,select:focus-visible,nav button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input,select{width:100%;min-height:48px;padding:8px 12px;border:1.5px solid #9fb3ac;border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+input[type=checkbox],input[type=radio]{width:24px;min-height:24px;accent-color:var(--deep);flex:none}
+.opt{display:flex;gap:12px;align-items:center;font-weight:500;margin:0;padding:10px 0;min-height:48px}
+.err{color:var(--weak);font-weight:600;margin:8px 0}
+.banner{background:#fff4cf;border:1px solid #e6cf7a;border-radius:10px;padding:10px 12px;margin:0 0 14px;font-size:.92rem}
+.chip{display:inline-block;border-radius:99px;padding:2px 10px;font-size:.85rem;font-weight:700}
+.chip.strong{background:#d7efe2;color:#1d5a40}.chip.ok{background:#fbeeb5;color:#6b5000}.chip.weak{background:#f6d9d1;color:#8b2d1b}
+.strip{display:flex;gap:2px;margin:12px 0 4px}.strip span{flex:1;height:34px;border-radius:4px;background:#2c5a5d}
+.strip span.w{outline:2px solid var(--sun);outline-offset:1px}
+.ticks{display:flex;justify-content:space-between;font-size:.78rem;color:#b9d3d0}
+.item{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
+.time{font-size:1.3rem;font-weight:800;white-space:nowrap}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;min-height:60px;border:0;background:none;font:inherit;font-weight:700;color:var(--mute);cursor:pointer;padding:6px 2px;line-height:1.25}
+nav button[aria-current=page]{color:var(--deep);box-shadow:inset 0 3px 0 var(--sun)}nav small{display:block;font-weight:400;font-size:.95rem}
+dialog{border:0;border-radius:var(--r);padding:20px;width:min(92vw,460px);max-height:88vh;color:var(--ink)}dialog::backdrop{background:#0008}
+.tl{border-left:3px solid var(--line);margin:0 0 0 6px;padding:0 0 0 14px}.tl .now{border-left-color:var(--sun)}
+.spin{width:34px;height:34px;border:4px solid var(--line);border-top-color:var(--deep);border-radius:50%;animation:s 1s linear infinite;margin:20px auto}
+@keyframes s{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+.t3{display:grid;grid-template-columns:1fr 1fr;gap:10px}.num{font-size:1.9rem;font-weight:800}
+dialog form,.card form{position:relative}.bar{position:sticky;bottom:0;background:#fff;padding:12px 0 4px;margin-top:12px;border-top:1px solid var(--line);z-index:2}
+.tip{background:#eef7f1;border-left:4px solid var(--ok);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:.95rem}.warn{background:#fff4cf;border-left-color:var(--mid)}
+.fr{display:grid;grid-template-columns:54px 1fr 98px;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--line)}.fr:last-child{border-bottom:0}.fh{font-weight:700;font-size:.9rem}
+.fb{height:14px;background:#e4ece7;border-radius:7px;overflow:hidden}.fb i{display:block;height:100%;border-radius:7px}.fb i.strong{background:var(--sun)}.fb i.ok{background:#7fb6b0}.fb i.weak{background:#b9c6c0}
+.fw{font-size:.85rem;font-weight:700;line-height:1.2}.fw small{font-weight:400;color:var(--mute)}.fm{grid-column:2/4;font-size:.85rem;font-weight:700;color:var(--deep)}.fr.nowh{background:#fff4cf;border-radius:8px}
+pre{white-space:pre-wrap;font-size:.85rem;background:#fff;padding:12px;border-radius:10px}
+</style>
+</head>
+<body>
+<noscript>Solar Hour needs JavaScript. Please turn it on in your browser.</noscript><div id="app"></div><dialog id="dlg"></dialog>
+<script>
+"use strict";
+/* ===== utils ===== */
+const PK="Asia/Karachi";
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtH=h=>`${(h%12)||12} ${h%24<12?"AM":"PM"}`;
+const r1=n=>(Math.round(n*10)/10).toFixed(1);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function nowPK(){const p=new Intl.DateTimeFormat("en-CA",{timeZone:PK,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()).reduce((a,x)=>(a[x.type]=x.value,a),{});return{date:`${p.year}-${p.month}-${p.day}`,hour:+p.hour%24,min:+p.minute}}
+function addDays(d,n){const t=new Date(d+"T00:00:00Z");t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
+
+/* ===== storage service (falls back to memory if localStorage is blocked) ===== */
+const store=(()=>{let ok=true;const mem={};return{
+ get(k){try{return localStorage.getItem(k)}catch(e){ok=false;return mem[k]??null}},
+ set(k,v){try{localStorage.setItem(k,v)}catch(e){ok=false;mem[k]=v}},
+ get ok(){return ok}}})();
+
+/* ===== data model ===== */
+const CITIES=[["Lahore",31.5204,74.3587],["Karachi",24.8607,67.0011],["Islamabad",33.6844,73.0479],["Rawalpindi",33.5651,73.0169],["Faisalabad",31.4504,73.135],["Multan",30.1575,71.4687],["Gujranwala",32.1877,74.1945],["Sialkot",32.4945,74.5229],["Peshawar",34.0151,71.5249],["Quetta",30.1798,66.975],["Hyderabad",25.396,68.3578]];
+const PRESETS=[{name:"Water motor",watts:750,dur:1,from:8,to:17},{name:"Washing machine",watts:500,dur:1,from:10,to:17},{name:"Iron",watts:1000,dur:1,from:10,to:16},{name:"Dishwasher",watts:1200,dur:2,from:10,to:16},{name:"AC pre-cooling",watts:1500,dur:2,from:11,to:16},{name:"EV charging",watts:3300,dur:3,from:10,to:16},{name:"Other",watts:500,dur:1,from:9,to:17}];
+const RATES=[["Low use (about PKR 35)",35],["Medium use (about PKR 55)",55],["High use (about PKR 70)",70]];
+const BASE={day:.5,mixed:.3,evening:.15},PR=.75;
+const DEF={setup:false,city:"Lahore",lat:31.5204,lon:74.3587,kw:0,pattern:"mixed",rate:55,mode:"live",remind:false,apps:[],ov:{},log:{},seen:{}};
+
+function validateApp(a,list){
+ const n=String(a.name||"").trim();
+ if(!n)return"Enter a name for the appliance.";if(n.length>30)return"Name is too long (30 letters max).";
+ if(list.some(x=>x.id!==a.id&&x.name.trim().toLowerCase()===n.toLowerCase()))return"You already have an appliance with this name.";
+ if(!(a.watts>=10&&a.watts<=10000))return"Power must be between 10 and 10,000 watts.";
+ if(!(a.dur>=.5&&a.dur<=12))return"Running time must be between 0.5 and 12 hours.";
+ if(!Number.isInteger(a.from)||!Number.isInteger(a.to)||a.from<0||a.to>24)return"Choose a valid time range.";
+ if(a.from>=a.to)return"“Not before” must be earlier than “Finish by”.";
+ if(a.to-a.from<Math.ceil(a.dur))return`This range is too short for ${a.dur} hour(s) of running. Widen it.`;
+ return""}
+
+function load(){
+ let s={...DEF};
+ try{const j=JSON.parse(store.get("solarhour.v1")||"null");if(j&&typeof j==="object"){
+  s={...DEF,...j};
+  s.apps=(Array.isArray(j.apps)?j.apps:[]).filter(a=>a&&a.id&&!validateApp(a,[]));
+  s.ov=j.ov&&typeof j.ov==="object"?j.ov:{};s.log=j.log&&typeof j.log==="object"?j.log:{};s.seen=j.seen&&typeof j.seen==="object"?j.seen:{};
+  if(!(s.lat>=-90&&s.lat<=90&&s.lon>=-180&&s.lon<=180)){s.lat=DEF.lat;s.lon=DEF.lon}
+  if(!BASE[s.pattern])s.pattern="mixed";if(!(s.rate>0))s.rate=55;if(!["live","demo","typical"].includes(s.mode))s.mode="live"}}catch(e){}
+ const today=nowPK().date;if(s.ov===DEF.ov)s.ov={};if(s.log===DEF.log)s.log={};if(s.seen===DEF.seen)s.seen={};if(s.apps===DEF.apps)s.apps=[];
+ Object.keys(s.ov).forEach(d=>{if(d<today)delete s.ov[d]});Object.keys(s.seen).forEach(d=>{if(d<today)delete s.seen[d]});Object.keys(s.log).forEach(d=>{if(d<addDays(today,-60))delete s.log[d]});return s}
+const save=()=>store.set("solarhour.v1",JSON.stringify(S));
+
+/* ===== weather service ===== */
+function parseForecast(j){
+ const h=j&&j.hourly;
+ if(!h||!Array.isArray(h.time)||!Array.isArray(h.shortwave_radiation)||h.time.length!==h.shortwave_radiation.length||!h.time.length)throw new Error("Unexpected forecast format");
+ const days={};
+ h.time.forEach((t,i)=>{
+  if(typeof t!=="string"||!/^\d{4}-\d{2}-\d{2}T\d{2}:/.test(t))throw new Error("Bad time value");
+  const d=t.slice(0,10),hr=+t.slice(11,13),rad=+h.shortwave_radiation[i],cl=Array.isArray(h.cloud_cover)?+h.cloud_cover[i]:0;
+  (days[d]=days[d]||new Array(24).fill(null))[hr]={rad:Number.isFinite(rad)?Math.max(0,rad):0,cloud:Number.isFinite(cl)?Math.min(100,Math.max(0,cl)):0}});
+ Object.keys(days).forEach(d=>{if(days[d].some(x=>!x))delete days[d]});
+ if(!Object.keys(days).length)throw new Error("No complete days in forecast");return days}
+const curve=(h,peak)=>h<6||h>18?0:peak*Math.pow(Math.sin((h-5.5)/13*Math.PI),1.2);
+function synthetic(kind){const d0=nowPK().date,out={};
+ [d0,addDays(d0,1)].forEach((d,k)=>{out[d]=Array.from({length:24},(_,h)=>{
+  if(kind==="typical")return{rad:curve(h,850),cloud:10};
+  return k===0?{rad:curve(h,820)*(h>=15?.5:1),cloud:h>=14?70:20}:{rad:curve(h,880)*(h<10?.85:1),cloud:h<10?40:15}})});return out}
+async function fetchForecast(lat,lon){
+ const c=new AbortController(),t=setTimeout(()=>c.abort(),10000);
+ try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&hourly=shortwave_radiation,cloud_cover&timezone=Asia%2FKarachi&forecast_days=2`,{signal:c.signal});
+  if(!r.ok)throw new Error("Forecast service returned "+r.status);return parseForecast(await r.json())}finally{clearTimeout(t)}}
+
+/* ===== scheduling engine ===== */
+const solarKw=(rad,kw)=>kw*Math.min(rad,1000)/1000*PR;
+const calcSavings=(kwh,rate)=>Math.round(Math.max(0,kwh)*rate);
+function bestWindow(score,len=4){
+ if(score.length<24||Math.max(...score)<.25)return null;let b=0,bs=-1;
+ for(let s=0;s<=24-len;s++){const v=score.slice(s,s+len).reduce((a,x)=>a+x,0);if(v>bs){bs=v;b=s}}
+ return{s:b,e:b+len,avg:bs/len}}
+function schedule(apps,day,cfg,ov){
+ ov=ov||{};
+ const cap=day.map(x=>Math.max(0,solarKw(x.rad*(1-.2*x.cloud/100),cfg.kw)-BASE[cfg.pattern]));
+ const score=day.map(x=>Math.min(1,x.rad/900)*(1-.2*x.cloud/100));
+ const win=bestWindow(score),mid=win?(win.s+win.e)/2:12;
+ const used=Array(24).fill(0);
+ const val=(a,s)=>{let v=0;const k=a.watts/1000;for(let i=0;i<Math.ceil(a.dur);i++)v+=Math.min(k*Math.min(1,a.dur-i),cap[s+i]);return v};
+ const on=apps.filter(x=>x.on).sort((a,b)=>b.watts-a.watts||(a.to-a.from)-(b.to-b.from));
+ const valid=(a,s)=>Number.isInteger(s)&&s>=a.from&&s+Math.ceil(a.dur)<=a.to;
+ const ordered=[...on.filter(a=>valid(a,ov[a.id])),...on.filter(a=>!valid(a,ov[a.id]))];
+ const items=ordered.map(a=>{
+  const n=Math.ceil(a.dur),kwh=a.watts/1000*a.dur;let s=null;
+  if(valid(a,ov[a.id]))s=ov[a.id];
+  else{let best=-1;for(let c=a.from;c+n<=a.to;c++){let u=0;for(let i=0;i<n;i++)u+=used[c+i];const v=val(a,c)-.05*u-Math.abs(c+n/2-mid)*.001;if(v>best){best=v;s=c}}}
+  if(s===null)return{id:a.id,name:a.name,start:null,kwh,avoided:0,level:"weak",reason:"No time slot fits. Widen the allowed hours."};
+  const av=val(a,s);for(let i=0;i<n;i++){cap[s+i]=Math.max(0,cap[s+i]-a.watts/1000*Math.min(1,a.dur-i));used[s+i]+=a.watts/1000}
+  const q=av/kwh,level=q>=.7?"strong":q>=.35?"ok":"weak";
+  return{id:a.id,name:a.name,w:a.watts,cover:Math.round(Math.min(1,q)*100),start:s,end:s+n,kwh,avoided:av,level,manual:valid(a,ov[a.id]),
+   reason:level==="strong"?"High solar expected at this time":level==="ok"?"Some solar is available, but part of this load will still use the grid":"Solar is low. Delay this load if you can"}});
+ items.sort((a,b)=>(a.start??99)-(b.start??99));
+ return{items,win,score,avoided:items.reduce((a,x)=>a+x.avoided,0)}}
+
+const dueReminders=(items,n)=>items.filter(i=>{if(i.start===null)return false;const m=(i.start-n.hour)*60-n.min;return m<=10&&m>-30});
+const snapshot=p=>Object.fromEntries(p.items.filter(i=>i.start!==null).map(i=>[i.id,i.start]));
+function forecastChanges(date,p){
+ const seen=S.seen[date],n=nowPK(),done=S.log[date]||{},out=[];if(!seen)return out;
+ p.items.forEach(i=>{const o=seen[i.id];if(i.start===null||o===undefined||o===i.start||o<n.hour||i.start<n.hour||done[i.id])return;
+  const old=schedule(S.apps,F.days[date],cfg(),{[i.id]:o}).items.find(x=>x.id===i.id),gain=i.avoided-(old?old.avoided:0);
+  if(gain>=.1)out.push({name:i.name,from:o,to:i.start,cover:old?old.cover:0,gain})});return out}
+function doneTotals(days){const t=nowPK().date,from=addDays(t,-days+1);let u=0,c=0;
+ Object.entries(S.log).forEach(([d,m])=>{if(d>=from&&d<=t)Object.values(m).forEach(x=>{u+=x.u;c++})});return{u,c}}
+const okDay=d=>Array.isArray(d)&&d.length===24&&d.every(x=>x&&Number.isFinite(x.rad));
+const TIPS=[[/motor|pump|tank/i,"Fill the tank fully now so you do not need the motor in the evening."],[/wash/i,"Run a full load, then hang clothes outside so the afternoon sun dries them."],[/iron/i,"Iron all your clothes in one batch. It is a heavy load, so keep other big machines off."],[/dish/i,"Run a full load. Use the delayed-start setting if your machine has one."],[/\bac\b|air|cool/i,"Cool the rooms now. You can raise the setting in the evening and stay comfortable."],[/\bev\b|charg|car/i,"Charge now and unplug when full, so you do not need grid power at night."]];
+const tipFor=n=>(TIPS.find(t=>t[0].test(n))||[0,"Run it in this slot instead of the evening."])[1];
+function overlaps(items){const o=[];for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){const a=items[i],b=items[j];
+ if(a.start===null||b.start===null)continue;const s=Math.max(a.start,b.start),e=Math.min(a.end,b.end);if(s<e)o.push({a:a.name,b:b.name,s,e,kw:a.w+b.w})}return o}
+/* ===== state ===== */
+let S=load(),F=null,tab="plan",timer=null;
+const cfg=()=>({kw:S.kw||5,pattern:S.pattern});
+const dates=()=>{const t=nowPK().date;return{today:t,tom:addDays(t,1)}};
+const planFor=d=>F&&F.days&&F.days[d]?schedule(S.apps,F.days[d],cfg(),S.ov[d]):null;
+
+async function loadForecast(force){
+ const{today,tom}=dates();
+ if(S.mode!=="live"){F={src:S.mode,days:synthetic(S.mode==="demo"?"demo":"typical"),at:Date.now()};return render()}
+ let c=null;try{c=JSON.parse(store.get("solarhour.cache")||"null")}catch(e){}
+ const ok=c&&c.lat===S.lat&&c.lon===S.lon&&c.days&&okDay(c.days[today])&&okDay(c.days[tom]);
+ if(!force&&ok&&Date.now()-c.at<108e5){F={src:"live",days:c.days,at:c.at};return render()}
+ F={loading:true};render();
+ try{const days=await fetchForecast(S.lat,S.lon);if(!days[today]||!days[tom])throw new Error("Forecast does not cover today and tomorrow");
+  store.set("solarhour.cache",JSON.stringify({lat:S.lat,lon:S.lon,at:Date.now(),days}));F={src:"live",days,at:Date.now()}}
+ catch(e){F=ok?{src:"cache",days:c.days,at:c.at}:{err:true}}
+ render()}
+
+/* ===== reminders and install ===== */
+let sent=new Set(),inst=null;try{sent=new Set(JSON.parse(store.get("solarhour.sent")||"[]"))}catch(e){}
+async function notify(title,body){try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
+ if(r)await r.showNotification(title,{body,icon:"icon.svg",tag:title});else new Notification(title,{body,icon:"icon.svg"})}catch(e){}}
+function checkReminders(){
+ if(!S.remind||!S.setup||!F||!F.days||typeof Notification==="undefined"||Notification.permission!=="granted")return;
+ const n=nowPK(),p=planFor(n.date);if(!p)return;
+ dueReminders(p.items,n).forEach(i=>{const k=n.date+i.id;if(sent.has(k))return;sent.add(k);
+  store.set("solarhour.sent",JSON.stringify([...sent].filter(x=>x.startsWith(n.date))));
+  const m=(i.start-n.hour)*60-n.min;notify(m>1?`${i.name} in ${m} min`:`Run ${i.name} now`,`${i.reason}. ${tipFor(i.name)}`)})}
+setInterval(checkReminders,3e4);
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();inst=e;if(S.setup&&tab==="savings")render()});
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+/* ===== forecast display ===== */
+const sunLvl=v=>v>=.6?"strong":v>=.35?"ok":"weak";
+const sunWord=v=>v>=.6?"Strong sun":v>=.35?"Some sun":"Low sun";
+const skyWord=c=>c<20?"Clear sky":c<60?"Partly cloudy":"Cloudy";
+function forecastCard(date,p,nowH){
+ const day=F.days[date],tm=new Date(F.at).toLocaleTimeString("en-GB",{timeZone:PK,hour:"2-digit",minute:"2-digit"});
+ let peak=6;for(let h=6;h<=18;h++)if(day[h].rad>day[peak].rad)peak=h;
+ const avg=day.slice(6,19).reduce((a,x)=>a+x.cloud,0)/13,sky=avg<25?"Mostly clear skies":avg<60?"Some clouds":"Mostly cloudy";
+ const src=F.src==="live"?`Live forecast, updated ${tm}`:F.src==="cache"?`Saved forecast from ${tm}`:F.src==="demo"?"Demo data, not a real forecast":"Typical sunny day, not a real forecast";
+ let rows="";for(let h=6;h<=18;h++){const v=p.score[h],run=p.items.filter(i=>i.start!==null&&h>=i.start&&h<i.end).map(i=>esc(i.name));
+  rows+=`<div class="fr${h===nowH?" nowh":""}"><span class="fh">${fmtH(h)}</span><span class="fb"><i class="${sunLvl(v)}" style="width:${Math.max(4,Math.round(v*100))}%"></i></span><span class="fw">${sunWord(v)}<br><small>${skyWord(day[h].cloud)}</small></span>${run.length?`<span class="fm">Run: ${run.join(", ")}</span>`:""}</div>`}
+ return`<div class="card"><h3>${date===dates().today?"Today's":"Tomorrow's"} sun forecast</h3><p style="margin:6px 0">${sky}. Strongest sun around <b>${fmtH(peak)}</b>.</p><p class="sub" style="margin:0 0 8px">Longer bar means more sun. Your machines are placed in the strongest hours. ${src}.</p>${rows}</div>`}
+/* ===== views ===== */
+const hourOpts=(sel,min=0,max=24)=>{let o="";for(let h=min;h<=max;h++)o+=`<option value="${h}"${h===sel?" selected":""}>${fmtH(h)}</option>`;return o};
+const disclaimer='<p class="sub">Estimate based on weather forecast and your appliance settings. Real results depend on weather, roof conditions, shading and what you actually use. Savings are not guaranteed.</p>';
+
+function banners(){let b="";
+ if(!store.ok)b+='<div class="banner">Your phone is blocking storage. Settings will be lost when you close this page.</div>';
+ if(F&&F.src==="demo")b+='<div class="banner"><b>Demo data.</b> This is sample weather, not a real forecast. <button class="btn sm alt" data-act="live">Use real forecast</button></div>';
+ if(F&&F.src==="typical")b+='<div class="banner"><b>Typical sunny day.</b> This is not a forecast. <button class="btn sm alt" data-act="live">Use real forecast</button></div>';
+ if(F&&F.src==="cache")b+=`<div class="banner">You are offline. Showing the forecast saved at ${new Date(F.at).toLocaleTimeString("en-GB",{timeZone:PK,hour:"2-digit",minute:"2-digit"})}. <button class="btn sm alt" data-act="retry">Retry</button></div>`;
+ return b}
+
+function setupForm(first){
+ const cityOpts=CITIES.map(c=>`<option value="${c[0]}"${c[0]===S.city?" selected":""}>${c[0]}</option>`).join("")+`<option value="Other"${CITIES.some(c=>c[0]===S.city)?"":" selected"}>Other (enter latitude and longitude)</option>`;
+ const pats=[["day","Mostly daytime"],["mixed","Mixed"],["evening","Mostly evening"]].map(p=>`<label class="opt"><input type="radio" name="pattern" value="${p[0]}"${S.pattern===p[0]?" checked":""}>${p[1]}</label>`).join("");
+ const apps=first?`<h3 style="margin-top:20px">Which appliances can you run at a different time?</h3><p class="sub">Tick them and set when each is allowed to run. You can change this later.</p>`+PRESETS.map((p,i)=>`<div class="card" style="margin:8px 0;padding:10px 14px"><label class="opt"><input type="checkbox" name="p${i}"${i<3?" checked":""}>${p.name}</label><div class="t3"><div><label for="w${i}">Power (watts)</label><input id="w${i}" name="w${i}" type="number" inputmode="numeric" value="${p.watts}"></div><div><label for="d${i}">Hours to run</label><input id="d${i}" name="d${i}" type="number" step="0.5" inputmode="decimal" value="${p.dur}"></div><div><label for="f${i}">Not before</label><select id="f${i}" name="f${i}">${hourOpts(p.from)}</select></div><div><label for="t${i}">Finish by</label><select id="t${i}" name="t${i}">${hourOpts(p.to)}</select></div></div></div>`).join(""):"";
+ return`<form data-form="${first?"first":"setup"}" novalidate>
+ <label for="city">City</label><select id="city" name="city">${cityOpts}</select>
+ <div class="t3"><div><label for="lat">Latitude</label><input id="lat" name="lat" type="number" step="any" value="${S.lat}"></div><div><label for="lon">Longitude</label><input id="lon" name="lon" type="number" step="any" value="${S.lon}"></div></div>
+ <label for="kw">Solar system size in kW <span class="sub">(optional)</span></label><input id="kw" name="kw" type="number" step="0.1" inputmode="decimal" placeholder="Not sure? Leave empty (we assume 5 kW)" value="${S.kw||""}">
+ <label>When do you use most electricity?</label>${pats}${apps}<p class="err" id="ferr"></p>
+ <div class="row bar"><button class="btn sun grow" type="submit">${first?"Make my plan":"Save"}</button>${first?"":'<button class="btn alt" type="button" data-act="close">Cancel</button>'}</div></form>`}
+
+function onboard(){return`<header><b>Solar <i>Hour</i></b></header><main>
+ <div class="card hero"><h2>Solar Hour helps you use your own solar power at the right time.</h2><p class="ur" dir="rtl" style="margin:10px 0 0;line-height:2">اپنی سولر بجلی صحیح وقت پر استعمال کریں۔</p><p class="sub">Answer a few questions. No account needed. Everything stays on your phone.</p></div>
+ <div class="card">${setupForm(true)}</div>${disclaimer}</main>`}
+
+function strip(p){const sc=p.score;let s="";for(let h=6;h<=18;h++){const v=sc[h];s+=`<span class="${p.win&&h>=p.win.s&&h<p.win.e?"w":""}" style="opacity:${.25+.75*v};background:${v>.5?"var(--sun)":"#7fb6b0"}" title="${fmtH(h)}"></span>`}
+ return`<div class="strip" aria-hidden="true">${s}</div><div class="ticks" aria-hidden="true"><span>6 AM</span><span>12 PM</span><span>6 PM</span></div>`}
+
+function planView(){
+ const{tom}=dates(),p=planFor(tom);
+ if(!S.apps.some(a=>a.on))return empty();
+ const rate=S.rate,w=p.win,sched=p.items.filter(i=>i.start!==null);
+ if(!S.seen[tom]){S.seen[tom]=snapshot(p);save()}
+ const sentence=!w?"Solar looks weak tomorrow. Run only what you must, and delay the rest.":sched.length?"Tomorrow, run "+sched.map(i=>`${i.name.toLowerCase()} at ${fmtH(i.start)}`).join(", ")+".":"No appliance fits tomorrow's solar hours. Widen their allowed times.";
+ const lvl=w?(w.avg>=.6?"Strong":w.avg>=.35?"Moderate":"Weak"):"Weak";
+ return`<div class="card hero"><div class="sub">Tomorrow's Solar Hour Plan <span class="ur">· کل کا منصوبہ</span></div>
+ <div class="big">${w?`Best solar window: ${fmtH(w.s)}–${fmtH(w.e)}`:"No strong solar window"}</div><div class="sub">${w?lvl+" solar expected":"Clouds or low sun expected"}</div>${strip(p)}<p style="margin:12px 0 0">${esc(sentence)}</p></div>
+ <div class="card"><div class="t3"><div><div class="sub">Grid units avoided</div><div class="num">${r1(p.avoided)}</div></div><div><div class="sub">Expected saving</div><div class="num">PKR ${calcSavings(p.avoided,rate)}</div></div></div></div>
+ ${forecastCard(tom,p)}
+ ${sched.length?`<button class="btn alt" data-act="share" style="width:100%;margin:0 0 6px">Send this plan on WhatsApp</button>`:""}
+ <h3 style="margin:18px 0 8px">Your machines, hour by hour</h3>
+ ${p.items.map(i=>`<div class="card"><div class="item"><div><h3>${esc(i.name)} <span class="sub">(${i.w} W)</span></h3><div style="margin:6px 0"><span class="chip ${i.level}">${i.level==="strong"?"Solar is strong":i.level==="ok"?"Partly solar":"Delay this load"}</span></div>
+ ${i.start!==null?`<div>Solar covers about <b>${i.cover}%</b> of this machine at this time.</div><div class="sub">Forecast at ${fmtH(i.start)}: ${skyWord(F.days[tom][i.start].cloud).toLowerCase()}, ${sunWord(p.score[i.start]).toLowerCase()}. ${esc(i.reason)}.</div><div class="tip">${esc(tipFor(i.name))}</div><div class="sub" style="margin-top:6px">Saves about ${r1(i.avoided)} units · PKR ${calcSavings(i.avoided,rate)}</div>`:`<div class="sub">${esc(i.reason)}</div>`}</div>
+ ${i.start!==null?`<div style="text-align:right"><div class="time">${fmtH(i.start)}</div><div class="sub">to ${fmtH(i.end)}</div><button class="btn sm alt" style="margin-top:8px" data-act="resched" data-id="${i.id}">Change time</button></div>`:""}</div></div>`).join("")}
+ ${overlaps(p.items).map(o=>`<div class="tip warn"><b>${esc(o.a)} and ${esc(o.b)}</b> run together at ${fmtH(o.s)}. Together they draw ${r1(o.kw/1000)} kW, so some grid power is used. Use Change time to move one of them.</div>`).join("")}
+ ${w?`<div class="card" style="margin-top:14px"><h3>Before ${fmtH(w.s)} and after ${fmtH(w.e)}</h3><p class="sub" style="margin:6px 0 0">Solar is weaker then. Starting a heavy machine outside the best window means buying grid power at about PKR ${S.rate} per unit. Lights and fans are fine at any time.</p></div>`:""}
+ ${disclaimer}`}
+
+function empty(){if(S.apps.length)return`<div class="card"><h2>All appliances are switched off</h2><p class="sub">Switch on at least one appliance to get a plan.</p><button class="btn sun" data-act="tab" data-t="apps">Open My Appliances</button></div>`;return`<div class="card"><h2>Add your first appliance</h2><p class="sub">Solar Hour needs at least one appliance that can run at a different time, like a water motor or washing machine.</p><button class="btn sun" data-act="addapp">Add appliance</button></div>`}
+
+function todayView(){
+ const{today}=dates(),n=nowPK(),d=F.days[today],p=planFor(today);
+ if(!S.apps.some(a=>a.on))return empty();
+ const x=d[n.hour],nx=d[n.hour+1];let msg,lvl;
+ if(x.rad<30){msg=n.hour<12?"The sun is not up yet":"Solar has finished for today";lvl="weak"}
+ else if(n.hour>=14&&nx&&nx.rad<.6*x.rad){msg="Solar window ending soon";lvl="ok"}
+ else if(x.cloud>=70&&x.rad<400){msg="Clouds reducing solar";lvl="ok"}
+ else if(x.rad>=450){msg="Strong solar expected now";lvl="strong"}
+ else{msg="Moderate solar right now";lvl="ok"}
+ const logd=S.log[today]||{};if(!S.seen[today]){S.seen[today]=snapshot(p);save()}
+ const sched=p.items.filter(i=>i.start!==null),live=sched.filter(i=>!logd[i.id]),now=live.filter(i=>i.start<=n.hour&&n.hour<i.end),next=live.find(i=>i.start>n.hour),chg=forecastChanges(today,p);
+ const fc=chg.length?`<div class="tip warn"><b>Forecast update</b>${chg.map(c=>`<div style="margin-top:6px">Move <b>${esc(c.name)}</b> from ${fmtH(c.from)} to <b>${fmtH(c.to)}</b>. At ${fmtH(c.from)} solar would now cover only about ${c.cover}% of it. Moving saves about ${r1(c.gain)} more units.</div>`).join("")}<button class="btn sm sun" style="margin-top:8px" data-act="seenok">Got it</button></div>`:"";
+ let action;
+ if(now.length)action=`<div class="big">Run now: ${esc(now.map(i=>i.name).join(", "))}</div><div class="sub">Finish by ${fmtH(Math.max(...now.map(i=>i.end)))}</div><div class="tip">${esc(tipFor(now[0].name))}</div>`;
+ else if(next){const m=(next.start-n.hour)*60-n.min;action=`<div class="big">Next: ${esc(next.name)} at ${fmtH(next.start)}</div><div class="sub">Starts in ${m>=60?Math.floor(m/60)+" h ":""}${m%60} min</div><div class="tip">${esc(tipFor(next.name))}</div>`}
+ else action=`<div class="big">Nothing more to run today</div><div class="sub">See tomorrow's plan for the best times.</div>`;
+ return`${fc}<div class="card hero"><div class="sub">Right now · ${fmtH(n.hour)} <span class="ur">· آج</span></div><div class="big">${msg}</div><span class="chip ${lvl}">${lvl==="strong"?"Good time to run loads":lvl==="ok"?"Use solar while it lasts":"Wait for the sun"}</span></div>
+ <div class="card">${action}</div>${forecastCard(today,p,n.hour)}<h3 style="margin:18px 0 8px">Today's timeline</h3><div class="tl">${sched.length?sched.map(i=>{const d=logd[i.id],st=d?"Done":i.end<=n.hour?"Time passed":i.start<=n.hour?"Now":"Later";return`<div class="${st==="Now"?"now":""}" style="padding:8px 0"><b>${fmtH(i.start)}</b> ${esc(i.name)} <span class="sub">(${i.w} W) · ${st}${d?` · saved about ${r1(d.u)} units`:""}</span>${d?`<div><button class="btn sm alt" data-act="undo" data-id="${i.id}">Undo</button></div>`:i.start<=n.hour?`<div><button class="btn sm sun" data-act="done" data-id="${i.id}">Mark as done</button></div>`:""}</div>`}).join(""):'<p class="sub">No appliance fits today\'s solar hours.</p>'}</div>
+ <p class="sub" style="margin-top:14px">Tap "Mark as done" after you run a machine. Solar Hour counts it in your real savings and warns you if the forecast changes.</p>${disclaimer}`}
+
+function appsView(){return`<div class="row" style="justify-content:space-between;margin-bottom:12px"><h2>My Appliances <span class="ur" style="font-size:1rem">آلات</span></h2><button class="btn sun sm" data-act="addapp">Add</button></div>
+ ${S.apps.length?S.apps.map(a=>`<div class="card"><div class="item"><div><h3>${esc(a.name)}</h3><div class="sub">${a.watts} W · ${a.dur} h · ${fmtH(a.from)}–${fmtH(a.to)}</div></div><label class="opt" style="padding:0"><input type="checkbox" data-act="toggle" data-id="${a.id}"${a.on?" checked":""} aria-label="Enable ${esc(a.name)}">${a.on?"On":"Off"}</label></div>
+ <div class="row" style="margin-top:10px"><button class="btn sm alt" data-act="editapp" data-id="${a.id}">Edit</button><button class="btn sm alt" data-act="delapp" data-id="${a.id}">Delete</button></div></div>`).join(""):'<div class="card"><p class="sub">No appliances yet. Add one to get a plan.</p></div>'}`}
+
+function savingsView(){
+ const{tom}=dates(),p=planFor(tom)||{avoided:0},daily=p.avoided,wk=daily*7*.85,mo=daily*30*.85,d7=doneTotals(7),d30=doneTotals(30);
+ return`<h2 style="margin-bottom:12px">Savings <span class="ur" style="font-size:1rem">بچت</span></h2>
+ <div class="card"><h3>What you saved so far</h3>${d30.c?`<div class="t3"><div><div class="sub">Last 7 days</div><div class="num">PKR ${calcSavings(d7.u,S.rate)}</div><div class="sub">${r1(d7.u)} units</div></div><div><div class="sub">Last 30 days</div><div class="num">PKR ${calcSavings(d30.u,S.rate)}</div><div class="sub">${r1(d30.u)} units</div></div></div><p class="sub">Counted from ${d30.c} machine run(s) you marked as done.</p>`:'<p class="sub">After you run a machine, tap "Mark as done" on the Today screen. Your real savings will appear here.</p>'}</div>
+ <div class="card hero"><div class="sub">Estimated per month</div><div class="big">PKR ${calcSavings(mo,S.rate)}</div><div class="sub">about ${r1(mo)} grid units avoided</div></div>
+ <div class="card"><div class="sub">Estimated per week</div><div class="num">PKR ${calcSavings(wk,S.rate)}</div><div class="sub">about ${r1(wk)} units</div></div>
+ <div class="card"><label for="rate" style="margin-top:0">Your electricity rate (PKR per unit)</label><input id="rate" type="number" step="0.5" inputmode="decimal" value="${S.rate}" data-act="rate">
+ <div class="row" style="margin-top:10px">${RATES.map(r=>`<button class="btn sm alt" data-act="preset" data-v="${r[1]}">${r[0]}</button>`).join("")}</div><p class="sub">Check your bill for your real rate. It can be higher at night and in higher slabs.</p></div>
+ <p class="sub">Weekly and monthly numbers repeat tomorrow's plan and take 15% off for cloudy days. They are estimates, not billing results.</p>${disclaimer}
+ <div class="card"><h3>Data</h3><div class="row" style="margin-top:8px"><button class="btn sm alt" data-act="demo">${S.mode==="demo"?"Turn off demo data":"Try demo data"}</button><button class="btn sm alt" data-act="typical">${S.mode==="typical"?"Use real forecast":"Use typical sunny day"}</button><button class="btn sm bad" data-act="reset">Erase all my data</button></div></div>
+ <div class="card"><h3>Reminders and app</h3><p class="sub">Get a notification a few minutes before each machine's time. Reminders work while Solar Hour is open or installed. Phones may pause apps in the background, so they are not guaranteed.</p><div class="row"><button class="btn sm ${S.remind?"alt":"sun"}" data-act="remind">${S.remind?"Turn reminders off":"Turn reminders on"}</button>${inst?'<button class="btn sm alt" data-act="install">Install app</button>':""}</div><p class="sub">On iPhone: tap Share, then Add to Home Screen.</p></div>`}
+
+function render(){
+ const el=document.getElementById("app");clearInterval(timer);
+ if(!S.setup){el.innerHTML=onboard();return}
+ const dd=dates();if(F&&F.days&&!(okDay(F.days[dd.today])&&okDay(F.days[dd.tom]))){F=null;loadForecast(false);return}
+ let body;
+ if(tab==="apps")body=appsView();
+ else if(!F||F.loading)body='<div class="card"><div class="spin" role="status" aria-label="Loading forecast"></div><p class="sub" style="text-align:center">Getting tomorrow\'s sun forecast…</p></div>';
+ else if(F.err)body=`<div class="card"><h2>Could not get the forecast</h2><p class="sub">Check your internet connection and try again. You can also plan with a typical sunny day instead.</p><div class="row"><button class="btn sun" data-act="retry">Retry</button><button class="btn alt" data-act="typical">Use typical sunny day</button></div></div>`;
+ else body=tab==="plan"?planView():tab==="today"?todayView():savingsView();
+ const nav=[["plan","Plan","منصوبہ"],["today","Today","آج"],["apps","Appliances","آلات"],["savings","Savings","بچت"]];
+ el.innerHTML=`<header><b>Solar <i>Hour</i></b><button class="btn sm sun" data-act="settings" aria-label="Location and system settings">Settings</button></header><main>${banners()}${body}</main>
+ <nav>${nav.map(n=>`<button data-act="tab" data-t="${n[0]}"${tab===n[0]?' aria-current="page"':""}>${n[1]}<small class="ur">${n[2]}</small></button>`).join("")}</nav>`;
+ if(tab==="today")timer=setInterval(render,6e4)}
+
+/* ===== dialogs ===== */
+const dlg=document.getElementById("dlg");
+const openDlg=h=>{dlg.innerHTML=h;if(!dlg.open)dlg.showModal()};
+function appForm(a){const e=a||{id:"",name:"",watts:500,dur:1,from:10,to:16,on:true};
+ return`<h2>${a?"Edit appliance":"Add appliance"}</h2><form data-form="app" data-id="${esc(e.id)}" novalidate>
+ ${a?"":`<label for="pre">Start from a preset</label><select id="pre" data-act="preset-app"><option value="">Choose…</option>${PRESETS.map((p,i)=>`<option value="${i}">${p.name} (${p.watts} W)</option>`).join("")}</select>`}
+ <label for="an">Name</label><input id="an" name="name" maxlength="30" value="${esc(e.name)}">
+ <div class="t3"><div><label for="aw">Power (watts)</label><input id="aw" name="watts" type="number" inputmode="numeric" value="${e.watts}"></div><div><label for="ad">Hours to run</label><input id="ad" name="dur" type="number" step="0.5" inputmode="decimal" value="${e.dur}"></div>
+ <div><label for="af">Not before</label><select id="af" name="from">${hourOpts(e.from)}</select></div><div><label for="at">Finish by</label><select id="at" name="to">${hourOpts(e.to)}</select></div></div>
+ <label class="opt"><input type="checkbox" name="on"${e.on?" checked":""}>Include in my plan</label><p class="err" id="ferr"></p>
+ <div class="row bar"><button class="btn sun grow" type="submit">Save</button><button class="btn alt" type="button" data-act="close">Cancel</button></div></form>`}
+
+function readApp(f,id){const g=n=>f.elements[n];return{id:id||uid(),name:g("name").value.trim(),watts:+g("watts").value,dur:+g("dur").value,from:+g("from").value,to:+g("to").value,on:g("on").checked}}
+
+/* ===== events ===== */
+function afterChange(){S.seen={};save();render()}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-act]");if(!b||b.tagName==="INPUT"||b.tagName==="SELECT")return;
+ const a=b.dataset.act,id=b.dataset.id,{tom,today}=dates();
+ if(a==="tab"){tab=b.dataset.t;render()}
+ else if(a==="retry")loadForecast(true);
+ else if(a==="live"){S.mode="live";save();loadForecast(true)}
+ else if(a==="typical"){S.mode=S.mode==="typical"?"live":"typical";save();loadForecast(true)}
+ else if(a==="demo"){S.mode=S.mode==="demo"?"live":"demo";save();loadForecast(true)}
+ else if(a==="close")dlg.close();
+ else if(a==="settings")openDlg(`<h2>Location and system</h2>${setupForm(false)}`);
+ else if(a==="addapp")openDlg(appForm(null));
+ else if(a==="editapp")openDlg(appForm(S.apps.find(x=>x.id===id)));
+ else if(a==="delapp"){const x=S.apps.find(y=>y.id===id);openDlg(`<h2>Delete ${esc(x.name)}?</h2><p class="sub">It will be removed from your plans.</p><div class="row"><button class="btn bad grow" data-act="delok" data-id="${id}">Delete</button><button class="btn alt" data-act="close">Keep it</button></div>`)}
+ else if(a==="delok"){S.apps=S.apps.filter(x=>x.id!==id);Object.values(S.ov).forEach(o=>delete o[id]);dlg.close();afterChange()}
+ else if(a==="done"){const p=planFor(today),i=p&&p.items.find(x=>x.id===id);if(i){(S.log[today]=S.log[today]||{})[id]={u:i.avoided};save();render()}}
+ else if(a==="undo"){if(S.log[today])delete S.log[today][id];save();render()}
+ else if(a==="seenok"){S.seen[today]=snapshot(planFor(today));save();render()}
+ else if(a==="remind"){
+  if(S.remind){S.remind=false;afterChange()}
+  else if(typeof Notification==="undefined")openDlg('<h2>Reminders not supported</h2><p class="sub">This browser cannot show notifications. Try Chrome on Android, or install the app.</p><button class="btn alt" data-act="close">OK</button>');
+  else Notification.requestPermission().then(r=>{if(r==="granted"){S.remind=true;notify("Reminders are on","You will be told before each machine's time.");checkReminders()}
+   else openDlg('<h2>Notifications are blocked</h2><p class="sub">Allow notifications for this site in your browser settings, then try again.</p><button class="btn alt" data-act="close">OK</button>');afterChange()})}
+ else if(a==="install"&&inst){inst.prompt();inst=null;render()}
+ else if(a==="share"){const p=planFor(tom),l=p.items.filter(i=>i.start!==null).map(i=>`${fmtH(i.start)} to ${fmtH(i.end)}: ${i.name}`).join("\n");
+  window.open("https://wa.me/?text="+encodeURIComponent(`Solar Hour plan for tomorrow\n${l}\nExpected saving about PKR ${calcSavings(p.avoided,S.rate)} (estimate)`),"_blank","noopener")}
+ else if(a==="resched"){const x=S.apps.find(y=>y.id===id),pl=planFor(tom),it=pl.items.find(y=>y.id===id),n=Math.ceil(x.dur),sun=h=>pl.score[h]>=.6?"best sun":pl.score[h]>=.35?"some sun":"low sun";let o="";
+  for(let s=x.from;s+n<=x.to;s++)o+=`<option value="${s}"${s===it.start?" selected":""}>${fmtH(s)} to ${fmtH(s+n)} (${sun(s)})</option>`;
+  openDlg(`<h2>Change time for ${esc(x.name)}</h2><label for="rs">Run it at</label><select id="rs">${o}</select><p class="sub">Your plan is recalculated right away. Other times may give less solar.</p>
+  <div class="row"><button class="btn sun grow" data-act="rsok" data-id="${id}">Save time</button><button class="btn alt" data-act="rsauto" data-id="${id}">Best time</button><button class="btn alt" data-act="close">Cancel</button></div>`)}
+ else if(a==="rsok"){(S.ov[tom]=S.ov[tom]||{})[id]=+document.getElementById("rs").value;dlg.close();afterChange()}
+ else if(a==="rsauto"){if(S.ov[tom])delete S.ov[tom][id];dlg.close();afterChange()}
+ else if(a==="preset"){S.rate=+b.dataset.v;afterChange()}
+ else if(a==="reset")openDlg(`<h2>Erase all data?</h2><p class="sub">Your appliances, location and settings will be deleted from this phone.</p><div class="row"><button class="btn bad grow" data-act="resetok">Erase everything</button><button class="btn alt" data-act="close">Cancel</button></div>`);
+ else if(a==="resetok"){try{localStorage.removeItem("solarhour.v1");localStorage.removeItem("solarhour.cache")}catch(x){}S={...DEF,apps:[],ov:{},log:{},seen:{}};F=null;tab="plan";dlg.close();render()}});
+
+document.addEventListener("change",e=>{
+ const t=e.target;
+ if(t.id==="city"){const c=CITIES.find(x=>x[0]===t.value);if(c){t.form.elements.lat.value=c[1];t.form.elements.lon.value=c[2]}}
+ else if(t.dataset.act==="toggle"){const a=S.apps.find(x=>x.id===t.dataset.id);a.on=t.checked;afterChange()}
+ else if(t.dataset.act==="rate"){const v=+t.value;if(v>0&&v<=500){S.rate=v;afterChange()}else render()}
+ else if(t.dataset.act==="preset-app"&&t.value!==""){const p=PRESETS[+t.value],f=t.form;f.elements.name.value=p.name;f.elements.watts.value=p.watts;f.elements.dur.value=p.dur;f.elements.from.value=p.from;f.elements.to.value=p.to}});
+
+document.addEventListener("submit",e=>{
+ e.preventDefault();const f=e.target,k=f.dataset.form,err=m=>{const x=f.querySelector("#ferr");x.textContent=m;x.scrollIntoView({block:"center"})};
+ if(k==="app"){const a=readApp(f,f.dataset.id),m=validateApp(a,S.apps);if(m)return err(m);
+  const i=S.apps.findIndex(x=>x.id===a.id);i>=0?S.apps[i]=a:S.apps.push(a);dlg.close();afterChange();return}
+ const lat=+f.elements.lat.value,lon=+f.elements.lon.value,kw=f.elements.kw.value.trim()===""?0:+f.elements.kw.value;
+ if(!(f.elements.lat.value!==""&&lat>=-90&&lat<=90&&f.elements.lon.value!==""&&lon>=-180&&lon<=180))return err("Enter a valid latitude (-90 to 90) and longitude (-180 to 180).");
+ if(!(kw>=0&&kw<=1000))return err("System size must be a number in kW, or leave it empty.");
+ let apps=[];
+ if(k==="first"){for(let i=0;i<PRESETS.length;i++){if(!f.elements["p"+i].checked)continue;
+   const a={id:uid(),name:PRESETS[i].name,watts:+f.elements["w"+i].value,dur:+f.elements["d"+i].value,from:+f.elements["f"+i].value,to:+f.elements["t"+i].value,on:true},m=validateApp(a,apps);
+   if(m)return err(PRESETS[i].name+": "+m);apps.push(a)}}
+ const c=f.elements.city.value;
+ S={...S,setup:true,city:c,lat,lon,kw,pattern:f.querySelector("input[name=pattern]:checked").value,apps:k==="first"?apps:S.apps};
+ try{localStorage.removeItem("solarhour.cache")}catch(x){}
+ save();dlg.close();loadForecast(true)});
+
+/* ===== self-tests: open solar-hour.html?test ===== */
+function selfTest(){
+ const r=[],t=(n,c)=>r.push((c?"PASS ":"FAIL ")+n),clear=Array.from({length:24},(_,h)=>({rad:curve(h,850),cloud:10})),night=clear.map(()=>({rad:0,cloud:0}));
+ const ap=(o)=>({id:"a",name:"Motor",watts:750,dur:1,from:8,to:17,on:true,...o});
+ t("valid appliance accepted",validateApp(ap(),[])==="");
+ t("from>=to rejected",validateApp(ap({from:12,to:12}),[])!=="");
+ t("range shorter than duration rejected",validateApp(ap({from:10,to:11,dur:2}),[])!=="");
+ t("duplicate name rejected",validateApp(ap({id:"b"}),[ap()])!=="");
+ t("savings = units x rate",calcSavings(2,55)===110&&calcSavings(-1,55)===0);
+ const p=schedule([ap({watts:1000,from:10,to:16}),ap({id:"b",name:"Iron",watts:1000,from:10,to:16})],clear,{kw:5,pattern:"mixed"});
+ t("window found on sunny day",p.win&&p.win.s>=9&&p.win.e<=15);
+ t("stays inside allowed hours",p.items.every(i=>i.start>=10&&i.end<=16));
+ t("heavy loads do not overlap when avoidable",p.items[0].start!==p.items[1].start);
+ const q=schedule([ap()],night,{kw:5,pattern:"mixed"});
+ t("no savings at night",q.avoided===0&&q.win===null);
+ t("avoided never exceeds energy used",p.items.every(i=>i.avoided<=i.kwh+1e-9));
+ t("override respected",schedule([ap()],clear,{kw:5,pattern:"mixed"},{a:9}).items[0].start===9);
+ const mk=n=>({hourly:{time:Array.from({length:n},(_,i)=>`2026-10-11T${String(i%24).padStart(2,"0")}:00`),shortwave_radiation:Array(n).fill(100),cloud_cover:Array(n).fill(10)}});
+ t("parse good response",Object.keys(parseForecast(mk(24))).length===1);
+ let bad=false;try{parseForecast({hourly:{time:["x"],shortwave_radiation:[1]}})}catch(e){bad=true}t("parse rejects malformed",bad);
+ bad=false;try{parseForecast(null)}catch(e){bad=true}t("parse rejects null",bad);
+ t("corrupt day rejected",!okDay([{rad:1}])&&okDay(clear));
+ t("weak sun gives no big saving",schedule([ap()],clear.map(x=>({rad:x.rad*.05,cloud:90})),{kw:5,pattern:"day"}).avoided<.1);
+ t("reminder due 5 min before",dueReminders([{start:11}],{hour:10,min:55}).length===1&&dueReminders([{start:11}],{hour:9,min:0}).length===0&&dueReminders([{start:null}],{hour:9,min:0}).length===0);
+ const cl=clear.map((x,h)=>h>=15?{rad:x.rad*.1,cloud:90}:x),ap2=ap({from:10,to:18});
+ t("cloudy slot covers less than best slot",schedule([ap2],cl,{kw:5,pattern:"mixed"},{a:16}).items[0].cover<schedule([ap2],cl,{kw:5,pattern:"mixed"}).items[0].cover);
+ t("snapshot keeps scheduled starts only",snapshot({items:[{id:"a",start:11},{id:"b",start:null}]}).a===11&&!("b" in snapshot({items:[{id:"b",start:null}]})));
+ t("sky and sun words",skyWord(10)==="Clear sky"&&skyWord(40)==="Partly cloudy"&&skyWord(90)==="Cloudy"&&sunWord(.8)==="Strong sun"&&sunWord(.4)==="Some sun"&&sunWord(.1)==="Low sun");
+ return r}
+
+window.addEventListener("error",()=>{document.getElementById("app").insertAdjacentHTML("afterbegin",'<div class="banner" role="alert">Something went wrong. Reload the page and try again.</div>')});
+dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
+window.addEventListener("online",()=>{if(S.setup&&F&&(F.err||F.src==="cache"))loadForecast(true)});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.setup&&F&&!F.loading){render();checkReminders()}});
+/* ===== start ===== */
+if(location.search.includes("test")){document.getElementById("app").innerHTML=`<main><h2>Self-tests</h2><pre>${selfTest().join("\n")}</pre></main>`}
+else{render();if(S.setup)loadForecast(false)}
+</script>
+</body>
+</html>
